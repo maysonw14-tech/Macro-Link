@@ -1,0 +1,44 @@
+---
+description: ATO-style benchmarking from four P&L ratios vs industry (Phase 4).
+alwaysApply: true
+---
+
+# Phase 4 — Benchmarking Engine (Macro Link)
+
+**Cross-references (always stack with these):**
+
+- Phase 1: [`.cursor/rules/pl-accounting-phase1.mdc`](.cursor/rules/pl-accounting-phase1.mdc)
+- Phase 2: [`.cursor/rules/pl-macro-sensitivity-phase2.mdc`](.cursor/rules/pl-macro-sensitivity-phase2.mdc)
+- Phase 3: [`.cursor/rules/pl-industry-overlay-phase3.mdc`](.cursor/rules/pl-industry-overlay-phase3.mdc)
+
+---
+
+You are now the Benchmarking Engine.
+
+When the user uploads their P&L and selects an industry:
+
+1. Calculate these 4 key percentages from their data:
+   - Cost of Sales % of Revenue
+   - Gross Profit % of Revenue
+   - Total Operating Expenses % of Revenue
+   - Net Profit After Tax % of Revenue
+
+2. Compare each percentage against the latest ATO Small Business Benchmarks for their chosen industry.
+
+3. Show a simple, clean comparison like this:
+   - Your Cost of Sales %: XX%  
+     ATO Benchmark Range: XX% – XX% (Your position: Above / Below / Within average)
+
+4. Keep the output very short and easy to read. Use only these 4 metrics. No full P&L.
+
+5. Always use strict accounting rules from Phase 1.
+
+Do this automatically after they upload the P&L and select the industry.
+
+## Data integrity (ATO ranges)
+
+This app does **not** embed official ATO Small Business Benchmark percentage bands. **Do not invent** “ATO Benchmark Range” numbers or ANZSIC-specific bands from memory. Only state numeric ATO ranges when the user (or a future in-repo dataset under e.g. `lib/benchmarks/`) supplies **authoritative** figures. Otherwise: report the **four calculated ratios** only, name the chosen industry, and direct the user to verify ranges on the ATO SBB material for their activity—without fabricating percentages.
+
+## This codebase (orientation)
+
+- Parsed grid and mapping: `lib/parse/`, `lib/mapping/`, `lib/retailChart.ts`. **Automatic post-upload benchmarking in the UI/API is not wired yet**; this rule governs agent behaviour until product code runs the same checks.

@@ -1,0 +1,32 @@
+---
+description: Industry selection, macro overlay explanations, and consistency with Phases 1–2 (Phase 3).
+alwaysApply: true
+---
+
+# Phase 3 — Industry selection and overlay behaviour (Macro Link)
+
+**Cross-references (always stack with these):**
+
+- Phase 1 (P&L structure and mapping discipline): [`.cursor/rules/pl-accounting-phase1.mdc`](.cursor/rules/pl-accounting-phase1.mdc)
+- Phase 2 (six industry categories and macro sensitivity matrix): [`.cursor/rules/pl-macro-sensitivity-phase2.mdc`](.cursor/rules/pl-macro-sensitivity-phase2.mdc)
+
+---
+
+When the user selects one of the 6 industry categories, follow this exact behaviour:
+
+1. Confirm the selected industry clearly.
+2. Apply the correct macro sensitivity rules from Phase 2 for that specific category only.
+3. Use the strict accounting rules from Phase 1 at all times.
+4. Keep responses clear, professional, and concise.
+5. When overlaying macro impacts on their P&L:
+   - Show which macro factors matter most for their industry.
+   - Explain the expected direction of impact (e.g. “Higher consumer confidence is expected to increase Sales Revenue by X%”).
+   - Never guess numbers — base it on the sensitivity rules.
+
+User only needs to choose one category (e.g. “Cafes, Restaurants & Takeaway”). After they choose, automatically apply the right sensitivities without asking again.
+
+Stay consistent with previous phases. Do not mix rules between industries.
+
+## This codebase (orientation)
+
+- Numeric overlay in the app uses cached series and β in [`lib/model/applyMacroOverlay.ts`](lib/model/applyMacroOverlay.ts); narrative copy in [`lib/model/buildReportNarrative.ts`](lib/model/buildReportNarrative.ts). **Industry-specific β weighting is not yet persisted in `SessionAnswers`** until you implement that in product code or Phase 4 (benchmarking).

@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Wizard state: parsed sheet + mapping + answers (no auth in MVP).
+model WorkflowSession {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  parsedGrid String?
+  parseMeta  String?
+  mapping    String?
+  answers    String?
+}
+
+model MacroSeries {
+  id           String              @id
+  label        String
+  source       String              @default("ABS")
+  MacroObservation MacroObservation[]
+}
+
+model MacroObservation {
+  id       String      @id @default(cuid())
+  seriesId String
+  series   MacroSeries @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  period   String
+  value    Float
+
+  @@unique([seriesId, period])
+}
+
+model MacroSnapshotMeta {
+  id        Int      @id @default(autoincrement())
+  fetchedAt DateTime @default(now())
+  source    String
+  notes     String?
+}

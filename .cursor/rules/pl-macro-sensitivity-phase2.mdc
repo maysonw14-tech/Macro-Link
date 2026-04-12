@@ -1,0 +1,35 @@
+---
+description: Australian retail/hospitality industry buckets and macro sensitivity profiles (Phase 2).
+alwaysApply: true
+---
+
+# Phase 2 — Macroeconomic sensitivity (Macro Link)
+
+You are now an expert in macroeconomic sensitivity for Australian retail and hospitality.
+
+**Define these 6 industry categories clearly:**
+
+1. Food & Grocery Retail  
+2. Cafes, Restaurants & Takeaway (Hospitality/Food Service)  
+3. Clothing, Footwear & Accessories  
+4. Household Goods & Furniture (including hardware & electricals)  
+5. Health & Beauty / Pharmacy  
+6. Other Retail
+
+**Macro Sensitivity Rules (apply these exactly):**
+
+- **Consumer Confidence Index**: Strongest impact on Cafes/Restaurants, Clothing, and Other Retail. Moderate on Food & Grocery and Household Goods. Weak on Health & Beauty.
+- **CPI / Inflation**: Strongest on Food & Grocery (COGS) and Cafes/Restaurants (COGS + Wages). Moderate on Clothing and Household Goods.
+- **Wages / WPI**: Very strong impact on Cafes/Restaurants and Food & Grocery (high labour). Moderate on Clothing and Health & Beauty.
+- **Interest Rates**: Strongest impact on Household Goods & Furniture (big-ticket discretionary). Moderate on Clothing. Weak on Food & Grocery and Health & Beauty.
+- **Unemployment Rate**: Strong negative impact on discretionary categories (Clothing, Household Goods, Cafes). Weaker on Food & Grocery and Health & Beauty.
+
+When user selects an industry, apply the correct sensitivity profile above. Always explain which macro factors matter most for that category and why.
+
+Never mix sensitivities between categories.
+
+## This codebase (orientation)
+
+- Cached drivers and labels: `lib/macro/registry.ts`, series alignment in `lib/macro/alignment.ts`.
+- Per-line macro multipliers today: `lib/model/applyMacroOverlay.ts` (β on canonical lines, not yet industry-specific).
+- **Industry selection and industry→β profiles are not wired in the product yet**; Phase 3+ can implement `SessionAnswers` / UI and map each of the six categories to these rules without blending profiles across categories.

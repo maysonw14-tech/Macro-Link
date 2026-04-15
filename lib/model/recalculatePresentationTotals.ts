@@ -1,4 +1,9 @@
 import type { ParsedGrid, RowMapping } from "../types";
+import {
+  cogsSumForGrossProfit,
+  otherIncomeSumAboveExclusive,
+  revenueSumAboveExclusive,
+} from "./revenueRollupForGp";
 
 const OPEX_DETAIL = new Set(["PAYROLL", "RENT", "MARKETING", "UTILITIES", "OTHER_OPEX"]);
 
@@ -51,24 +56,19 @@ function sumOpexDetailInWindow(
   return s;
 }
 
-function sumRevenueAbove(mapping: RowMapping[], i: number, t: number, matrix: number[][]): number {
-  let s = 0;
-  for (let j = 0; j < i; j++) {
-    if (canon(mapping, j) === "REVENUE") s += matrix[j]![t]!;
-  }
-  return s;
-}
-
-function sumCogsAbove(mapping: RowMapping[], i: number, t: number, matrix: number[][]): number {
-  let s = 0;
-  for (let j = 0; j < i; j++) {
-    if (canon(mapping, j) === "COGS") s += matrix[j]![t]!;
-  }
-  return s;
-}
-
-function setGp(mapping: RowMapping[], i: number, t: number, matrix: number[][]): void {
-  matrix[i]![t] = sumRevenueAbove(mapping, i, t, matrix) - sumCogsAbove(mapping, i, t, matrix);
+function setGp(
+  mapping: RowMapping[],
+  rowLabels: string[],
+  i: number,
+  t: number,
+  matrix: number[][],
+): void {
+  const nR = matrix.length;
+  const rev =
+    revenueSumAboveExclusive(mapping, i, t, matrix, rowLabels) +
+    otherIncomeSumAboveExclusive(mapping, i, t, matrix);
+  const cogs = cogsSumForGrossProfit(mapping, i, t, matrix, nR).value;
+  matrix[i]![t] = rev - cogs;
 }
 
 function setTotalOpex(mapping: RowMapping[], i: number, t: number, matrix: number[][]): void {
@@ -76,11 +76,20 @@ function setTotalOpex(mapping: RowMapping[], i: number, t: number, matrix: numbe
 }
 
 /** GP row value if it exists above i; else revenue − COGS from detail lines. */
-function gpScalar(mapping: RowMapping[], i: number, t: number, matrix: number[][]): number | null {
+function gpScalar(
+  mapping: RowMapping[],
+  rowLabels: string[],
+  i: number,
+  t: number,
+  matrix: number[][],
+): number | null {
   const gpIdx = lastIndexLt(mapping, i, "GROSS_PROFIT");
   if (gpIdx >= 0) return matrix[gpIdx]![t]!;
-  const rev = sumRevenueAbove(mapping, i, t, matrix);
-  const cg = sumCogsAbove(mapping, i, t, matrix);
+  const nR = matrix.length;
+  const rev =
+    revenueSumAboveExclusive(mapping, i, t, matrix, rowLabels) +
+    otherIncomeSumAboveExclusive(mapping, i, t, matrix);
+  const cg = cogsSumForGrossProfit(mapping, i, t, matrix, nR).value;
   if (rev === 0 && cg === 0) return null;
   return rev - cg;
 }
@@ -95,14 +104,26 @@ function totalOpexScalar(mapping: RowMapping[], i: number, t: number, matrix: nu
   return sumOpexDetailInWindow(mapping, i, t, matrix);
 }
 
-function setEbitda(mapping: RowMapping[], i: number, t: number, matrix: number[][]): void {
-  const gp = gpScalar(mapping, i, t, matrix);
+function setEbitda(
+  mapping: RowMapping[],
+  rowLabels: string[],
+  i: number,
+  t: number,
+  matrix: number[][],
+): void {
+  const gp = gpScalar(mapping, rowLabels, i, t, matrix);
   if (gp == null) return;
   const ox = totalOpexScalar(mapping, i, t, matrix);
   matrix[i]![t] = gp - ox;
 }
 
-function setEbit(mapping: RowMapping[], i: number, t: number, matrix: number[][]): void {
+function setEbit(
+  mapping: RowMapping[],
+  rowLabels: string[],
+  i: number,
+  t: number,
+  matrix: number[][],
+): void {
   const ebitdaIdx = lastIndexLt(mapping, i, "EBITDA");
   if (ebitdaIdx >= 0) {
     const daIdx = lastIndexBetween(mapping, ebitdaIdx, i, "DEPRECIATION");
@@ -111,7 +132,7 @@ function setEbit(mapping: RowMapping[], i: number, t: number, matrix: number[][]
     matrix[i]![t] = v;
     return;
   }
-  const gp = gpScalar(mapping, i, t, matrix);
+  const gp = gpScalar(mapping, rowLabels, i, t, matrix);
   if (gp == null) return;
   const ox = totalOpexScalar(mapping, i, t, matrix);
   let v = gp - ox;
@@ -175,20 +196,23 @@ const RECALC_NOTE =
 /**
  * Overwrite baseline/adjusted for presentation / subtotal rows so totals roll up from detail lines.
  * Runs in phases so upstream subtotals exist before downstream (e.g. Total OpEx before EBITDA).
+ * Pass `rollupMapping` from `augmentMappingForRollup(sessionMapping, grid.rowLabels)` so UNMAPPED
+ * rows with clear labels still participate in rollups.
  */
 export function recalculatePresentationTotals(
   grid: ParsedGrid,
-  mapping: RowMapping[],
+  rollupMapping: RowMapping[],
   baseline: number[][],
   adjusted: number[][],
 ): Set<number> {
   const touched = new Set<number>();
   const nR = baseline.length;
   const nP = grid.periodLabels.length;
+  const rowLabels = grid.rowLabels;
 
   const runPhase = (ids: Set<string>, fn: (i: number, t: number, m: number[][]) => void) => {
     for (let i = 0; i < nR; i++) {
-      if (!ids.has(canon(mapping, i))) continue;
+      if (!ids.has(canon(rollupMapping, i))) continue;
       for (let t = 0; t < nP; t++) {
         fn(i, t, baseline);
         fn(i, t, adjusted);
@@ -197,21 +221,21 @@ export function recalculatePresentationTotals(
     }
   };
 
-  runPhase(new Set(["GROSS_PROFIT"]), (i, t, m) => setGp(mapping, i, t, m));
-  runPhase(new Set(["TOTAL_OPEX"]), (i, t, m) => setTotalOpex(mapping, i, t, m));
-  runPhase(new Set(["EBITDA"]), (i, t, m) => setEbitda(mapping, i, t, m));
-  runPhase(new Set(["EBIT"]), (i, t, m) => setEbit(mapping, i, t, m));
-  runPhase(new Set(["NPBT"]), (i, t, m) => setNpbt(mapping, i, t, m));
+  runPhase(new Set(["GROSS_PROFIT"]), (i, t, m) => setGp(rollupMapping, rowLabels, i, t, m));
+  runPhase(new Set(["TOTAL_OPEX"]), (i, t, m) => setTotalOpex(rollupMapping, i, t, m));
+  runPhase(new Set(["EBITDA"]), (i, t, m) => setEbitda(rollupMapping, rowLabels, i, t, m));
+  runPhase(new Set(["EBIT"]), (i, t, m) => setEbit(rollupMapping, rowLabels, i, t, m));
+  runPhase(new Set(["NPBT"]), (i, t, m) => setNpbt(rollupMapping, i, t, m));
 
   for (let i = 0; i < nR; i++) {
-    if (canon(mapping, i) !== "INCOME_TAX") continue;
+    if (canon(rollupMapping, i) !== "INCOME_TAX") continue;
     for (let t = 0; t < nP; t++) {
-      setAdjustedIncomeTaxFromNpbtRate(mapping, i, t, baseline, adjusted);
+      setAdjustedIncomeTaxFromNpbtRate(rollupMapping, i, t, baseline, adjusted);
     }
     touched.add(i);
   }
 
-  runPhase(new Set(["NPAT"]), (i, t, m) => setNpat(mapping, i, t, m));
+  runPhase(new Set(["NPAT"]), (i, t, m) => setNpat(rollupMapping, i, t, m));
 
   return touched;
 }

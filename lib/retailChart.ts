@@ -35,13 +35,28 @@ export const RETAIL_CANONICAL: CanonicalLine[] = [
     drivers: [
       {
         driverId: "RETAIL_TURNOVER_INDEX",
-        beta: 0.55,
+        beta: 0.5,
         rationaleKey: "revenue_retail_turnover",
       },
       {
         driverId: "CPI_ALL_GROUPS",
-        beta: 0.15,
+        beta: 0.14,
         rationaleKey: "revenue_cpi",
+      },
+      {
+        driverId: "CONSUMER_CONFIDENCE",
+        beta: 0.26,
+        rationaleKey: "revenue_confidence",
+      },
+      {
+        driverId: "UNEMPLOYMENT_RATE",
+        beta: -0.2,
+        rationaleKey: "revenue_unemployment",
+      },
+      {
+        driverId: "RBA_CASH_RATE",
+        beta: -0.12,
+        rationaleKey: "revenue_rates",
       },
     ],
     contributesToEbitdaBridge: true,
@@ -50,7 +65,10 @@ export const RETAIL_CANONICAL: CanonicalLine[] = [
     id: "COGS",
     label: "Cost of goods sold",
     synonyms: ["cos", "cogs", "cost of sales", "product costs", "direct costs"],
-    drivers: [{ driverId: "CPI_TRADABLE_GOODS", beta: 0.7, rationaleKey: "cogs_cpi_goods" }],
+    drivers: [
+      { driverId: "CPI_TRADABLE_GOODS", beta: 0.62, rationaleKey: "cogs_cpi_goods" },
+      { driverId: "WPI", beta: 0.32, rationaleKey: "cogs_wpi" },
+    ],
     contributesToEbitdaBridge: true,
   },
   {
@@ -78,7 +96,10 @@ export const RETAIL_CANONICAL: CanonicalLine[] = [
     id: "MARKETING",
     label: "Marketing",
     synonyms: ["advertising", "promo", "media"],
-    drivers: [{ driverId: "CPI_ALL_GROUPS", beta: 0.25, rationaleKey: "marketing_cpi" }],
+    drivers: [
+      { driverId: "CONSUMER_CONFIDENCE", beta: 0.2, rationaleKey: "marketing_confidence" },
+      { driverId: "CPI_ALL_GROUPS", beta: 0.14, rationaleKey: "marketing_cpi" },
+    ],
     contributesToEbitdaBridge: true,
   },
   {
@@ -142,7 +163,7 @@ export const RETAIL_CANONICAL: CanonicalLine[] = [
     id: "INTEREST",
     label: "Interest / finance costs",
     synonyms: ["interest expense", "finance costs", "borrowing costs"],
-    drivers: [],
+    drivers: [{ driverId: "RBA_CASH_RATE", beta: 0.5, rationaleKey: "interest_cash_rate" }],
     contributesToEbitdaBridge: false,
   },
   {

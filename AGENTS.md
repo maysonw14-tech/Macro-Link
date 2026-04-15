@@ -10,11 +10,11 @@ Retail / hospitality accounting hierarchy, line-item discipline, and “ask inst
 
 ## Macro sensitivity by industry (Phase 2)
 
-The six Australian retail/hospitality industry buckets and macro sensitivity matrix (confidence, CPI, WPI, rates, unemployment) live in [`.cursor/rules/pl-macro-sensitivity-phase2.mdc`](.cursor/rules/pl-macro-sensitivity-phase2.mdc). Do not mix profiles across categories.
+Permanent **P&L line → macro factor** mapping (sales, COGS, wages, rent/utilities, marketing, interest), **defensive vs cyclical** segments, and non‑negotiable narrative rules are in [`.cursor/rules/pl-macro-sensitivity-phase2.mdc`](.cursor/rules/pl-macro-sensitivity-phase2.mdc). **Product parity:** implemented drivers and β live in [`lib/macro/registry.ts`](lib/macro/registry.ts) and [`lib/retailChart.ts`](lib/retailChart.ts); do not mix profiles across categories.
 
 ## Industry choice and overlay explanations (Phase 3)
 
-After the user picks **one** of the six categories, follow [`.cursor/rules/pl-industry-overlay-phase3.mdc`](.cursor/rules/pl-industry-overlay-phase3.mdc): confirm the industry, apply **only** that Phase 2 profile, keep Phase 1 accounting discipline, explain dominant macro factors and **direction** without inventing numeric impacts unless they come from the product model. Persisting industry on `SessionAnswers` / UI remains optional product work.
+After the user picks **one** of the six categories, follow [`.cursor/rules/pl-industry-overlay-phase3.mdc`](.cursor/rules/pl-industry-overlay-phase3.mdc): confirm the industry, **cross-walk the Phase 2 table** for every overlay explanation, apply **only** that segment’s profile, keep Phase 1 accounting discipline, use defensive/cyclical framing, and explain **direction** without inventing dollar impacts unless they come from the computed overlay.
 
 ## Benchmarking vs ATO Small Business Benchmarks (Phase 4)
 

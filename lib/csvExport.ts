@@ -9,7 +9,7 @@ function sumRow(row: number[]): number {
   return row.reduce((s, v) => s + v, 0);
 }
 
-/** Plain CSV: P&amp;L table only (no narrative — use Excel export for a separate tab). */
+/** Plain CSV: P&amp;L table only (after + difference; no narrative — use Excel export for a separate tab). */
 export function overlayToCsv(overlay: OverlayResult): string {
   const rows: string[] = [];
   const head = ["Line", "Kind", ...overlay.periodLabels, "Total", "Rationale"];
@@ -18,17 +18,9 @@ export function overlayToCsv(overlay: OverlayResult): string {
   for (let i = 0; i < overlay.baseline.length; i++) {
     const label = overlay.explanations[i]?.rowLabel ?? `Row_${i}`;
     const ex = overlay.explanations[i];
-    const b = overlay.baseline[i]!;
     const a = overlay.adjusted[i]!;
     const d = overlay.delta[i]!;
 
-    rows.push([
-      esc(label),
-      "before",
-      ...b.map((v) => esc(formatAccountingInt(v))),
-      esc(formatAccountingInt(sumRow(b))),
-      "",
-    ].join(","));
     rows.push([
       esc(label),
       "after",

@@ -4,7 +4,6 @@ import { Fragment, useEffect, useState } from "react";
 import { Disclaimer } from "../components/Disclaimer";
 import { Nav } from "../components/Nav";
 import { formatAccountingInt } from "@/lib/accountingFormat";
-import { MACRO_FORWARD_PATH_DISCLOSURE } from "@/lib/macro/alignment";
 import { INDUSTRY_PASS_THROUGH_UI_NOTE } from "@/lib/model/industryDriverScaling";
 import { RETAIL_INDUSTRY_OPTIONS } from "@/lib/retailIndustrySegments";
 import { plLineDeltaFavourable } from "@/lib/model/plLineDeltaFavourable";
@@ -40,17 +39,14 @@ function varianceFavourable(
 function LineBlock({
   ex,
   i,
-  baseline,
   adjusted,
   delta,
 }: {
   ex: LineExplanation;
   i: number;
-  baseline: number[];
   adjusted: number[];
   delta: number[];
 }) {
-  const totalB = sumRow(baseline);
   const totalA = sumRow(adjusted);
   const totalD = sumRow(delta);
 
@@ -84,30 +80,20 @@ function LineBlock({
               Low map
             </span>
           ) : null}
-          <span className="ml-1 font-normal text-neutral-500 dark:text-neutral-400">· before</span>
+          <span className="ml-1 font-normal text-neutral-500 dark:text-neutral-400">· scenario</span>
         </td>
-        {baseline.map((v, t) => (
-          <td key={t} className="border-t border-neutral-100 px-2 py-1 text-right font-mono tabular-nums dark:border-neutral-800">
+        {adjusted.map((v, t) => (
+          <td
+            key={t}
+            className="border-t border-neutral-100 px-2 py-1 text-right font-mono tabular-nums dark:border-neutral-800"
+          >
             {formatAccountingInt(v)}
           </td>
         ))}
         <td className="border-t border-neutral-100 px-2 py-1 text-right font-mono font-medium tabular-nums dark:border-neutral-800">
-          {formatAccountingInt(totalB)}
+          {formatAccountingInt(totalA)}
         </td>
         <td className={`${rationaleCell} border-t border-neutral-100 dark:border-neutral-800`}>{"\u2013"}</td>
-      </tr>
-      <tr>
-        <td className="px-2 py-1">
-          <span className="text-neutral-900 dark:text-neutral-100">{ex.rowLabel}</span>
-          <span className="ml-1 font-normal text-neutral-500 dark:text-neutral-400">· after</span>
-        </td>
-        {adjusted.map((v, t) => (
-          <td key={t} className="px-2 py-1 text-right font-mono tabular-nums">
-            {formatAccountingInt(v)}
-          </td>
-        ))}
-        <td className="px-2 py-1 text-right font-mono font-medium tabular-nums">{formatAccountingInt(totalA)}</td>
-        <td className={rationaleCell}>{"\u2013"}</td>
       </tr>
       <tr className={diffBg}>
         <td
@@ -193,14 +179,35 @@ export default function ResultsPage() {
       <Nav />
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Macro-overlaid P&amp;L</h1>
-        <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-          Each line shows <strong className="font-medium">before</strong> (baseline),{" "}
-          <strong className="font-medium">after</strong> (macro-adjusted), and{" "}
-          <strong className="font-medium">difference</strong> by period. The <strong className="font-medium">Total</strong>{" "}
-          column sums periods only (sheet total columns are excluded from the horizon). Rationale appears on the
-          difference row. {MACRO_FORWARD_PATH_DISCLOSURE} Macro snapshot:{" "}
-          <span className="font-mono text-xs">{macroFetchedAt ?? "unknown"}</span>
-        </p>
+        <div className="mt-1 space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
+          <p>
+            This view applies a simple macro <strong className="font-medium text-neutral-800 dark:text-neutral-200">what-if</strong>{" "}
+            on your uploaded numbers: we take recent moves in a few public indicators (from the data we have cached),
+            blend them with the sensitivities you set per line and your industry choice, and scale each month of the
+            baseline. It is a transparent scenario overlay, not a full economic or earnings forecast. The table below
+            shows the <strong className="font-medium text-neutral-800 dark:text-neutral-200">scenario</strong> row and
+            the <strong className="font-medium text-neutral-800 dark:text-neutral-200">change</strong> from your upload
+            per line (no separate “before” row).
+          </p>
+          <p>
+            Rows mapped as gross profit, operating-expense totals, EBITDA, EBIT, or bottom-line profit{" "}
+            <strong className="font-medium text-neutral-800 dark:text-neutral-200">ignore the uploaded subtotal</strong>{" "}
+            for the maths here: we rebuild them from your mapped revenue, COGS, OpEx, interest, and tax lines so bad
+            sheet subtotals do not flow through.
+          </p>
+          <p>
+            <strong className="text-neutral-800 dark:text-neutral-200">Illustration only:</strong> if spending and
+            prices both tick up a little in the same month, a mapped revenue line might move from about{" "}
+            <strong className="font-medium">$100,000</strong> to on the order of <strong className="font-medium">$102,000</strong>{" "}
+            for that month—your actual rows, drivers, and settings will differ.
+          </p>
+          <p className="text-xs">
+            Macro snapshot:{" "}
+            <span className="font-mono text-neutral-800 dark:text-neutral-200">
+              {macroFetchedAt ?? "unknown"}
+            </span>
+          </p>
+        </div>
         {answers ? (
           <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">
             <span className="font-medium text-neutral-800 dark:text-neutral-200">
@@ -231,6 +238,20 @@ export default function ResultsPage() {
             </a>
           </div>
 
+          {overlay.layoutWarnings?.length ? (
+            <div
+              role="alert"
+              className="rounded-lg border border-amber-300/80 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 dark:border-amber-800/60 dark:bg-amber-950/35 dark:text-amber-50"
+            >
+              <p className="font-medium text-amber-950 dark:text-amber-100">Mapping check</p>
+              <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-amber-900/95 dark:text-amber-100/90">
+                {overlay.layoutWarnings.map((w, idx) => (
+                  <li key={idx}>{w}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
           <section className="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
             <table className="min-w-full border-collapse text-left text-xs">
               <thead className="bg-neutral-50 dark:bg-neutral-900/60">
@@ -255,7 +276,6 @@ export default function ResultsPage() {
                     key={i}
                     ex={ex}
                     i={i}
-                    baseline={overlay.baseline[i]!}
                     adjusted={overlay.adjusted[i]!}
                     delta={overlay.delta[i]!}
                   />

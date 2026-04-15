@@ -7,7 +7,7 @@ function sumRow(row: number[]): number {
   return row.reduce((s, v) => s + v, 0);
 }
 
-/** Sheet 1: P&L only (before / after / difference + totals + rationale on diff row). */
+/** Sheet 1: P&L only (after + difference + totals + rationale on diff row). */
 function overlayToAoA(overlay: OverlayResult): (string | number)[][] {
   const head: (string | number)[] = ["Line", "Kind", ...overlay.periodLabels, "Total", "Rationale"];
   const rows: (string | number)[][] = [head];
@@ -15,11 +15,9 @@ function overlayToAoA(overlay: OverlayResult): (string | number)[][] {
   for (let i = 0; i < overlay.baseline.length; i++) {
     const label = overlay.explanations[i]?.rowLabel ?? `Row_${i}`;
     const ex = overlay.explanations[i];
-    const b = overlay.baseline[i]!;
     const a = overlay.adjusted[i]!;
     const d = overlay.delta[i]!;
 
-    rows.push([label, "before", ...b.map((v) => accountingCell(v)), accountingCell(sumRow(b)), ""]);
     rows.push([label, "after", ...a.map((v) => accountingCell(v)), accountingCell(sumRow(a)), ""]);
     rows.push([
       label,

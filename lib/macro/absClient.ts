@@ -16,6 +16,9 @@ export function buildSyntheticObservations(monthsBack = 48): Record<MacroDriverI
     WPI: 100,
     CPI_RENT: 100,
     CPI_ELECTRICITY: 100,
+    UNEMPLOYMENT_RATE: 100,
+    CONSUMER_CONFIDENCE: 100,
+    RBA_CASH_RATE: 100,
   };
 
   for (const d of MACRO_DRIVERS) {
@@ -34,7 +37,13 @@ export function buildSyntheticObservations(monthsBack = 48): Record<MacroDriverI
             ? 0.0009
             : d.id === "CPI_ELECTRICITY"
               ? 0.0018
-              : 0.0014;
+              : d.id === "UNEMPLOYMENT_RATE"
+                ? 0.0005
+                : d.id === "CONSUMER_CONFIDENCE"
+                  ? 0.001
+                  : d.id === "RBA_CASH_RATE"
+                    ? 0.0004
+                    : 0.0014;
       const wave = 0.0004 * Math.sin(i / 4 + (d.id.length % 3));
       v = v * (1 + drift + wave);
       series.push({ period, value: Math.round(v * 1000) / 1000 });

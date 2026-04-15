@@ -92,4 +92,6 @@ export interface OverlayResult {
   macroAligned: MacroAligned;
   macroSnapshotIso: string | null;
   forwardRule: string;
+  /** Mapping/layout issues (e.g. duplicate Revenue above Gross profit). */
+  layoutWarnings?: string[];
 }

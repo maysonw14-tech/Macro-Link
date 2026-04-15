@@ -13,14 +13,20 @@ const SCALES: Record<RetailIndustrySegment, Partial<Record<MacroDriverId, number
     WPI: 0.95,
     CPI_RENT: 1.0,
     CPI_ELECTRICITY: 1.02,
+    UNEMPLOYMENT_RATE: 0.88,
+    CONSUMER_CONFIDENCE: 0.92,
+    RBA_CASH_RATE: 0.9,
   },
   CAFES_RESTAURANTS: {
     RETAIL_TURNOVER_INDEX: 1.12,
     CPI_ALL_GROUPS: 1.05,
     CPI_TRADABLE_GOODS: 1.06,
-    WPI: 1.18,
+    WPI: 1.4,
     CPI_RENT: 1.14,
     CPI_ELECTRICITY: 1.05,
+    UNEMPLOYMENT_RATE: 1.22,
+    CONSUMER_CONFIDENCE: 1.2,
+    RBA_CASH_RATE: 1.08,
   },
   CLOTHING_FOOTWEAR: {
     RETAIL_TURNOVER_INDEX: 1.06,
@@ -29,6 +35,9 @@ const SCALES: Record<RetailIndustrySegment, Partial<Record<MacroDriverId, number
     WPI: 1.0,
     CPI_RENT: 1.08,
     CPI_ELECTRICITY: 1.0,
+    UNEMPLOYMENT_RATE: 1.18,
+    CONSUMER_CONFIDENCE: 1.16,
+    RBA_CASH_RATE: 1.16,
   },
   HOUSEHOLD_HARDWARE: {
     RETAIL_TURNOVER_INDEX: 1.04,
@@ -37,6 +46,9 @@ const SCALES: Record<RetailIndustrySegment, Partial<Record<MacroDriverId, number
     WPI: 1.0,
     CPI_RENT: 1.05,
     CPI_ELECTRICITY: 1.02,
+    UNEMPLOYMENT_RATE: 1.12,
+    CONSUMER_CONFIDENCE: 1.1,
+    RBA_CASH_RATE: 1.22,
   },
   HEALTH_BEAUTY_PHARMACY: {
     RETAIL_TURNOVER_INDEX: 1.05,
@@ -45,22 +57,22 @@ const SCALES: Record<RetailIndustrySegment, Partial<Record<MacroDriverId, number
     WPI: 1.05,
     CPI_RENT: 1.06,
     CPI_ELECTRICITY: 1.0,
+    UNEMPLOYMENT_RATE: 0.92,
+    CONSUMER_CONFIDENCE: 0.95,
+    RBA_CASH_RATE: 0.93,
   },
   OTHER_RETAIL: {},
 };
 
-const SCALE_MIN = 0.75;
-const SCALE_MAX = 1.35;
-
 export function industryDriverMultiplier(segment: RetailIndustrySegment, driverId: MacroDriverId): number {
   const raw = SCALES[segment]?.[driverId] ?? 1;
   if (!Number.isFinite(raw)) return 1;
-  return Math.min(SCALE_MAX, Math.max(SCALE_MIN, raw));
+  return raw;
 }
 
 /** One line for UI (Questions / Results). */
 export const INDUSTRY_PASS_THROUGH_UI_NOTE =
-  "Your industry choice scales each macro driver’s pass-through on top of the retail chart β (OTHER_RETAIL = 1.00× everywhere). Benchmarks still use the same segment profile.";
+  "Your industry choice scales each macro driver’s pass-through on top of the retail chart β (OTHER_RETAIL = 1.00× everywhere; configured multipliers are not clamped). Benchmarks still use the same segment profile.";
 
 /** Appended to overlay forwardRule for audit trail. */
 export function industryPassThroughForwardClause(segment: RetailIndustrySegment): string {
@@ -69,4 +81,4 @@ export function industryPassThroughForwardClause(segment: RetailIndustrySegment)
 
 /** Narrative “Financial risks” bullet (kept in sync with UI note). */
 export const INDUSTRY_PASS_THROUGH_RISK_BULLET =
-  "Industry-specific pass-through multipliers sit on top of retail chart β (see overlay forward rule); OTHER_RETAIL uses 1.00× on every driver — illustrative only, not econometrically fitted.";
+  "Industry-specific pass-through multipliers sit on top of retail chart β (see overlay forward rule); OTHER_RETAIL uses 1.00× on every driver — illustrative scenario assumptions, not econometrically fitted.";

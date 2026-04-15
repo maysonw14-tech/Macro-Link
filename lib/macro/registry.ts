@@ -4,7 +4,13 @@ export type MacroDriverId =
   | "CPI_TRADABLE_GOODS"
   | "WPI"
   | "CPI_RENT"
-  | "CPI_ELECTRICITY";
+  | "CPI_ELECTRICITY"
+  /** ABS labour market / unemployment proxy (level series; higher = worse for discretionary demand when paired with negative revenue β). */
+  | "UNEMPLOYMENT_RATE"
+  /** Consumer confidence / sentiment proxy (index). */
+  | "CONSUMER_CONFIDENCE"
+  /** RBA cash rate or policy rate proxy (level; higher → higher interest expense pass-through). */
+  | "RBA_CASH_RATE";
 
 export const MACRO_DRIVERS: {
   id: MacroDriverId;
@@ -33,6 +39,21 @@ export const MACRO_DRIVERS: {
     id: "CPI_ELECTRICITY",
     label: "CPI — electricity",
     absDescription: "CPI electricity subgroup (utilities proxy)",
+  },
+  {
+    id: "UNEMPLOYMENT_RATE",
+    label: "Unemployment (proxy)",
+    absDescription: "Labour market slack proxy (ABS-style; higher often pressures discretionary retail)",
+  },
+  {
+    id: "CONSUMER_CONFIDENCE",
+    label: "Consumer confidence (proxy)",
+    absDescription: "Household sentiment / confidence proxy (Westpac–MI or similar when live data is wired)",
+  },
+  {
+    id: "RBA_CASH_RATE",
+    label: "RBA cash rate (proxy)",
+    absDescription: "Policy interest rate proxy (RBA cash rate or bank bill when live data is wired)",
   },
 ];
 

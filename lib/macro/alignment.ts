@@ -87,7 +87,7 @@ export function alignLevelsToPeriodsWithForwardMom(
 
 export type MacroAligned = Record<MacroDriverId, number[]>;
 
-/** Shown in overlay forwardRule / results UI — keep in sync with {@link alignLevelsToPeriodsWithForwardMom}. */
+/** Shown in overlay forwardRule / results UI — keep in sync with annual uniform overlay in `applyMacroOverlay`. */
 export const MACRO_FORWARD_PATH_DISCLOSURE =
-  "Months after the last month with a published observation in the macro cache use the same clipped month-on-month change as the last two observed months, projected forward so horizon columns are not frozen at zero growth.";
+  "Each macro driver uses the latest year-on-year change on the cached index (or a month-on-month annualised fallback if a full year is missing), and applies that same annual rate as the shock on every forecast month — a scenario overlay, not a cumulative index path to the annual figure.";
 

@@ -57,7 +57,7 @@ function plainMaterialDriverSummary(input: {
 const REC_PAD = [
   "Sense-check margins and cash against management accounts.",
   "Reconcile any material unmapped lines before external or board use.",
-  "Refresh macro data after major ABS releases if the horizon is material to decisions.",
+  "Ensure the macro cache reflects major ABS releases when the horizon is material to decisions.",
 ];
 
 export function buildReportNarrative(input: {
@@ -67,7 +67,7 @@ export function buildReportNarrative(input: {
   answers: SessionAnswers;
   macroFetchedAt: Date | null;
 }): ReportNarrative {
-  const { overlay, mapping, answers, macroFetchedAt } = input;
+  const { overlay, mapping, answers, macroFetchedAt, grid } = input;
 
   const drivers = MACRO_DRIVERS.map((d) => {
     const approx = overlay.driverBridgeApprox[d.id] ?? 0;
@@ -100,7 +100,7 @@ export function buildReportNarrative(input: {
   const financialRisksAndLimitations: string[] = [];
   if (!macroFetchedAt) {
     financialRisksAndLimitations.push(
-      "We don’t know when macro was last saved — overlays may not match the ABS/RBA data you expect until you run “Update macro data”.",
+      "We don’t know when macro was last saved — overlays may not match the ABS/RBA data you expect until the macro cache is refreshed on the server.",
     );
   } else {
     const ageDays = (Date.now() - macroFetchedAt.getTime()) / (1000 * 60 * 60 * 24);
@@ -111,7 +111,7 @@ export function buildReportNarrative(input: {
     }
   }
   financialRisksAndLimitations.push(
-    "The forward path is built from cached levels with capped month-on-month steps — it is not a forecast, and caps damp big month shocks.",
+    "Macro pass-through replays the latest published annual change on each cached index as the same per-period shock on every month in your file (full chart β and industry scaling apply) — scenario overlay only; extreme inputs can produce large dollar swings.",
   );
   financialRisksAndLimitations.push(INDUSTRY_PASS_THROUGH_RISK_BULLET);
   if (mapping.some((m) => m.confidence < 0.45 && m.canonicalId !== "UNMAPPED")) {
@@ -160,7 +160,7 @@ export function buildReportNarrative(input: {
   }
   financialRecommendations = financialRecommendations.slice(0, 3);
 
-  const userPcts = computeIndustryBenchmarkUserPcts(overlay.adjusted, mapping);
+  const userPcts = computeIndustryBenchmarkUserPcts(overlay.adjusted, mapping, grid.rowLabels);
   const benchDefs = getAtoBenchmarkRows(answers.industrySegment);
   const userValues = [
     userPcts.grossMarginPct,

@@ -1,35 +1,75 @@
 ---
-description: Australian retail/hospitality industry buckets and macro sensitivity profiles (Phase 2).
+description: Permanent P&L→macro factor mapping, Australian retail/hospitality industry sensitivity, and product registry alignment (Phase 2).
 alwaysApply: true
 ---
 
 # Phase 2 — Macroeconomic sensitivity (Macro Link)
 
-You are now an expert in macroeconomic sensitivity for Australian retail and hospitality.
+You are an expert in how **macroeconomic factors affect retail and hospitality P&L accounts in Australia**. Use this section as the **permanent reference** when explaining overlays, writing narratives, or reasoning about pass-through—together with Phase 1 (accounting structure) and Phase 3 (industry selection).
 
-**Define these 6 industry categories clearly:**
+## Six industry segments (codebase IDs)
 
-1. Food & Grocery Retail  
-2. Cafes, Restaurants & Takeaway (Hospitality/Food Service)  
-3. Clothing, Footwear & Accessories  
-4. Household Goods & Furniture (including hardware & electricals)  
-5. Health & Beauty / Pharmacy  
-6. Other Retail
+Map user language to these IDs (`SessionAnswers.industrySegment` / [`lib/retailIndustrySegments.ts`](lib/retailIndustrySegments.ts)):
 
-**Macro Sensitivity Rules (apply these exactly):**
+| Segment | ID |
+|--------|-----|
+| Food & Grocery | `FOOD_GROCERY` |
+| Cafes, Restaurants & Takeaway | `CAFES_RESTAURANTS` |
+| Clothing, Footwear & Accessories | `CLOTHING_FOOTWEAR` |
+| Household Goods & Furniture (hardware, electricals) | `HOUSEHOLD_HARDWARE` |
+| Health & Beauty / Pharmacy | `HEALTH_BEAUTY_PHARMACY` |
+| Other retail | `OTHER_RETAIL` |
 
-- **Consumer Confidence Index**: Strongest impact on Cafes/Restaurants, Clothing, and Other Retail. Moderate on Food & Grocery and Household Goods. Weak on Health & Beauty.
-- **CPI / Inflation**: Strongest on Food & Grocery (COGS) and Cafes/Restaurants (COGS + Wages). Moderate on Clothing and Household Goods.
-- **Wages / WPI**: Very strong impact on Cafes/Restaurants and Food & Grocery (high labour). Moderate on Clothing and Health & Beauty.
-- **Interest Rates**: Strongest impact on Household Goods & Furniture (big-ticket discretionary). Moderate on Clothing. Weak on Food & Grocery and Health & Beauty.
-- **Unemployment Rate**: Strong negative impact on discretionary categories (Clothing, Household Goods, Cafes). Weaker on Food & Grocery and Health & Beauty.
+## Defensive vs cyclical (use every time)
 
-When user selects an industry, apply the correct sensitivity profile above. Always explain which macro factors matter most for that category and why.
+- **Defensive (lower macro volatility in this product framing):** Food & Grocery, Health & Beauty / Pharmacy.
+- **Cyclical (higher macro sensitivity):** Cafes/Restaurants, Clothing/Footwear, Household Goods.
 
-Never mix sensitivities between categories.
+Always tie qualitative volatility language to the user’s selected segment.
 
-## This codebase (orientation)
+## Permanent knowledge — P&L account → macro factor mapping
 
-- Cached drivers and labels: `lib/macro/registry.ts`, series alignment in `lib/macro/alignment.ts`.
-- Per-line macro multipliers today: `lib/model/applyMacroOverlay.ts` (β on canonical lines, not yet industry-specific).
-- **Industry selection and industry→β profiles are not wired in the product yet**; Phase 3+ can implement `SessionAnswers` / UI and map each of the six categories to these rules without blending profiles across categories.
+**Sales revenue**
+
+- **Consumer confidence:** Strong positive link (especially Cafes, Clothing, Household Goods).
+- **Unemployment rate:** Strong negative (discretionary categories).
+- **Interest rates (cash / policy rate):** Moderate negative (big-ticket / rate-sensitive demand).
+- **CPI / inflation:** Mild short-term positive pass-through to nominal sales in some channels; long-run margin pressure possible—use table nuance, not a single sign forever.
+
+**Cost of goods sold (COGS)**
+
+- **CPI / food & tradable inflation:** Strong positive (cost increase)—strongest in Food & Grocery and Cafes.
+- **WPI / wages:** Moderate positive (supplier and input labour cost pressure).
+
+**Wages & salaries**
+
+- **WPI / wage growth:** Strong positive (cost increase)—highest sensitivity in Cafes/Restaurants and Food & Grocery (labour-heavy).
+
+**Rent & utilities**
+
+- **CPI / inflation:** Moderate positive (occupancy and energy cost pressure)—use rent and electricity sub-indices in product drivers where mapped.
+
+**Marketing**
+
+- **Consumer confidence:** Moderate link to marketing/sales support spend (scenario framing).
+
+**Interest expense**
+
+- **Interest rates (RBA cash rate proxy):** Strong positive (cost increase)—strongest pass-through emphasis for Household Goods and Clothing in industry scaling.
+
+## Non‑negotiable rules
+
+1. Use **strength and direction** from this table **for the user’s selected industry only**—never blend profiles across segments.
+2. **Do not invent** new macro–line relationships outside this table for narratives or “what-if” copy.
+3. When generating reports or UI explanations, **name which macro factors drive each mapped P&L line** (and cite the cached proxy labels from the registry when relevant).
+4. Numeric **β** and industry multipliers in code should remain **directionally consistent** with “strong / moderate / mild” here; qualitative labels are authoritative for wording.
+
+## This codebase (product parity)
+
+- **Drivers and labels:** [`lib/macro/registry.ts`](lib/macro/registry.ts) (`MacroDriverId`, `MACRO_DRIVERS`).
+- **Overlay math:** [`lib/model/applyMacroOverlay.ts`](lib/model/applyMacroOverlay.ts) — multiplicative `(1 + β × industry × inflationScale × MoM)` per linked driver; rollups recomputed in [`lib/model/recalculatePresentationTotals.ts`](lib/model/recalculatePresentationTotals.ts).
+- **Chart β per canonical line:** [`lib/retailChart.ts`](lib/retailChart.ts).
+- **Industry × driver scaling:** [`lib/model/industryDriverScaling.ts`](lib/model/industryDriverScaling.ts).
+- **Narrative blurbs per driver:** [`lib/model/materialDriverNarrative.ts`](lib/model/materialDriverNarrative.ts).
+
+Synthetic / cached series may lag live ABS/RBA; refresh path is `macro:refresh` / API, not upload.

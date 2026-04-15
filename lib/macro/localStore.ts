@@ -1,4 +1,5 @@
 import { prisma } from "../db";
+import { uniformMonthlyMomFromObservations } from "./latestAnnualDriverRates";
 import { ALL_DRIVER_IDS, type MacroDriverId } from "./registry";
 import { alignLevelsToPeriodsWithForwardMom, type MacroAligned } from "./alignment";
 
@@ -6,11 +7,14 @@ export async function getLatestMacroSnapshotMeta() {
   return prisma.macroSnapshotMeta.findFirst({ orderBy: { id: "desc" } });
 }
 
-export async function readAlignedMacro(
-  periodKeys: string[],
-): Promise<{ aligned: MacroAligned; fetchedAt: Date | null }> {
+export async function readAlignedMacro(periodKeys: string[]): Promise<{
+  aligned: MacroAligned;
+  fetchedAt: Date | null;
+  uniformMonthlyMom: Record<MacroDriverId, number>;
+}> {
   const meta = await getLatestMacroSnapshotMeta();
   const aligned = {} as MacroAligned;
+  const uniformMonthlyMom = {} as Record<MacroDriverId, number>;
   for (const id of ALL_DRIVER_IDS) {
     const obs = await prisma.macroObservation.findMany({
       where: { seriesId: id },
@@ -18,8 +22,9 @@ export async function readAlignedMacro(
     });
     const pairs = obs.map((o) => ({ period: o.period, value: o.value }));
     aligned[id as MacroDriverId] = alignLevelsToPeriodsWithForwardMom(periodKeys, pairs);
+    uniformMonthlyMom[id as MacroDriverId] = uniformMonthlyMomFromObservations(pairs);
   }
-  return { aligned, fetchedAt: meta?.fetchedAt ?? null };
+  return { aligned, fetchedAt: meta?.fetchedAt ?? null, uniformMonthlyMom };
 }
 
 export async function upsertMacroSeries(series: { id: string; label: string; source: string }[]) {

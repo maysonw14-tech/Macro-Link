@@ -14,6 +14,10 @@ describe("industryDriverMultiplier", () => {
     );
   });
 
+  it("does not clamp multipliers above the old 1.35 ceiling", () => {
+    expect(industryDriverMultiplier("CAFES_RESTAURANTS", "WPI")).toBe(1.4);
+  });
+
   it("CAFES_RESTAURANTS boosts WPI vs neutral", () => {
     expect(industryDriverMultiplier("CAFES_RESTAURANTS", "WPI")).toBeGreaterThan(1);
   });

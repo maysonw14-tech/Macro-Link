@@ -18,7 +18,7 @@ export async function runComputeForSessionId(sessionId: string) {
   const answers = normalizeSessionAnswers(JSON.parse(session.answers));
 
   const periodKeys = normalizePeriodLabels(grid.periodLabels);
-  const { aligned, fetchedAt } = await readAlignedMacro(periodKeys);
+  const { aligned, fetchedAt, uniformMonthlyMom } = await readAlignedMacro(periodKeys);
   const meta = await prisma.macroSnapshotMeta.findFirst({ orderBy: { id: "desc" } });
 
   const overlay = applyMacroOverlay({
@@ -27,6 +27,7 @@ export async function runComputeForSessionId(sessionId: string) {
     aligned,
     answers,
     macroSnapshotIso: fetchedAt ? fetchedAt.toISOString() : null,
+    uniformMonthlyMom,
   });
 
   const narrative = buildReportNarrative({

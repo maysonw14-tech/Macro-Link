@@ -1,4 +1,6 @@
 import type { RowMapping } from "../types";
+import { augmentMappingForRollup } from "./rollupMappingInference";
+import { revenueSumAboveExclusive } from "./revenueRollupForGp";
 
 /**
  * Sums one matrix row, or all rows mapped to a canonical id (same row order as overlay).
@@ -13,6 +15,11 @@ function sumForCanonical(matrix: number[][], mapping: RowMapping[], canonicalId:
   return s;
 }
 
+function firstRowIndexForCanonical(mapping: RowMapping[], canonicalId: string): number | null {
+  const hit = mapping.find((m) => m.canonicalId === canonicalId);
+  return hit != null ? hit.rowIndex : null;
+}
+
 export interface IndustryBenchmarkUserPcts {
   grossMarginPct: number | null;
   payrollPctOfSales: number | null;
@@ -23,12 +30,28 @@ export interface IndustryBenchmarkUserPcts {
 /**
  * Four KPIs on **adjusted** (post-overlay) values, using mapped canonical lines only.
  * Returns null when the denominator (total sales) is not positive.
+ * When `rowLabels` is set and a Gross profit row exists, revenue totals match gross-profit rollups
+ * (e.g. one “Total revenue” line instead of summing every Revenue-mapped row).
  */
 export function computeIndustryBenchmarkUserPcts(
   adjusted: number[][],
   mapping: RowMapping[],
+  rowLabels?: string[],
 ): IndustryBenchmarkUserPcts {
-  const rev = sumForCanonical(adjusted, mapping, "REVENUE");
+  const rollupMapping =
+    rowLabels && rowLabels.length ? augmentMappingForRollup(mapping, rowLabels) : mapping;
+  const gpIdx = firstRowIndexForCanonical(rollupMapping, "GROSS_PROFIT");
+  const nP = adjusted[0]?.length ?? 0;
+
+  let rev: number;
+  if (gpIdx != null && rowLabels && rowLabels.length > 0) {
+    rev = 0;
+    for (let t = 0; t < nP; t++) {
+      rev += revenueSumAboveExclusive(rollupMapping, gpIdx, t, adjusted, rowLabels);
+    }
+  } else {
+    rev = sumForCanonical(adjusted, mapping, "REVENUE");
+  }
   if (rev <= 0) {
     return {
       grossMarginPct: null,
@@ -67,7 +90,11 @@ export function computeIndustryBenchmarkUserPcts(
     ebitdaDollars = derivedEbitda;
   }
 
-  const grossMarginPct = ((rev - cogs) / rev) * 100;
+  const salesForMargin = rev + otherIncome;
+  const grossMarginPct =
+    Math.abs(salesForMargin) > 1e-9
+      ? ((salesForMargin - cogs) / salesForMargin) * 100
+      : ((rev - cogs) / rev) * 100;
   const payrollPctOfSales = (payroll / rev) * 100;
   const otherOpexPctOfSales = ((rent + marketing + utilities + otherOpex) / rev) * 100;
   const ebitdaMarginPct = (ebitdaDollars / rev) * 100;

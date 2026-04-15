@@ -36,4 +36,24 @@ describe("computeIndustryBenchmarkUserPcts", () => {
     const p = computeIndustryBenchmarkUserPcts(adjusted, mapping);
     expect(p.ebitdaMarginPct).toBeCloseTo(20, 5);
   });
+
+  it("does not sum every revenue row into the sales denominator when a total revenue line is present", () => {
+    const adjusted = [
+      [65_000],
+      [2_241],
+      [102_223],
+      [34_981],
+      [67_242],
+    ];
+    const rowLabels = ["Sales Revenue", "Other Revenue", "Total Revenue", "COGS", "Gross profit"];
+    const mapping: RowMapping[] = [
+      { rowIndex: 0, canonicalId: "REVENUE", confidence: 1 },
+      { rowIndex: 1, canonicalId: "REVENUE", confidence: 1 },
+      { rowIndex: 2, canonicalId: "REVENUE", confidence: 1 },
+      { rowIndex: 3, canonicalId: "COGS", confidence: 1 },
+      { rowIndex: 4, canonicalId: "GROSS_PROFIT", confidence: 1 },
+    ];
+    const p = computeIndustryBenchmarkUserPcts(adjusted, mapping, rowLabels);
+    expect(p.grossMarginPct).toBeCloseTo(((102_223 - 34_981) / 102_223) * 100, 5);
+  });
 });

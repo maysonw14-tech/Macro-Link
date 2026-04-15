@@ -13,6 +13,12 @@ const DRIVER_IMPACT: Record<MacroDriverId, string> = {
     "Higher CPI rents feed market rent inflation into mapped occupancy and lease-type costs.",
   CPI_ELECTRICITY:
     "Higher electricity CPI lifts power and utilities costs where utilities are mapped.",
+  UNEMPLOYMENT_RATE:
+    "Higher unemployment in the labour-market proxy typically coincides with weaker discretionary spending; mapped revenue uses a negative pass-through so rising unemployment pressures sales down in this scenario.",
+  CONSUMER_CONFIDENCE:
+    "Stronger consumer confidence usually supports retail turnover; where revenue or marketing is linked, higher confidence in the proxy lifts the scenario path.",
+  RBA_CASH_RATE:
+    "A higher cash-rate proxy lifts debt-service pressure: mapped interest expense moves up, while revenue uses a negative pass-through for rate-sensitive demand (big-ticket retail).",
 };
 
 export function materialDriverFinancialSummary(driverId: MacroDriverId): string {

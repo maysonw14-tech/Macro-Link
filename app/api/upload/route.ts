@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error: msg,
-        hint: "If this mentions an unknown column (e.g. parseMeta), run: npx prisma migrate dev",
+        hint: "If tables are missing, set DATABASE_URL to Postgres and run: npx prisma migrate deploy",
       },
       { status: 500 },
     );

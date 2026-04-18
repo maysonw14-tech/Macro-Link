@@ -34,7 +34,7 @@ yarn-error.log*
 .env*
 !.env.example
 
-# local sqlite
+# legacy local sqlite (optional; app uses Postgres now)
 /dev.db
 /prisma/dev.db
 

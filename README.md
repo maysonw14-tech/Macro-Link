@@ -2,12 +2,13 @@
 
 Australian **Retail** MVP: upload a budget/forecast spreadsheet, answer a few questions, confirm account mappings, then view a **macro scenario overlay** with transparent drivers and a short narrative (material factors, limitations, template recommendations).
 
-Macro series are stored in a **local SQLite cache** (or Postgres/Turso in production). **Uploads do not call ABS** — use **Update macro data** (UI or `npm run macro:refresh`) to refresh the cache.
+Macro series and wizard state live in **PostgreSQL** (e.g. free **Neon** for local + Vercel). **Uploads do not call ABS** — use **Update macro data** (UI or `npm run macro:refresh`) to refresh the cache.
 
 ## Quick start
 
 ```bash
 cp .env.example .env
+# Edit .env: set DATABASE_URL to your Postgres URL (e.g. create a free project at neon.tech).
 npm install
 npx prisma migrate dev
 npm run macro:refresh   # or click “Update macro data” in the app
@@ -29,7 +30,8 @@ We shock each macro driver with its latest year-on-year change from the cache, p
 | Script | Purpose |
 |--------|---------|
 | `npm run dev` | Next.js dev server |
-| `npm run build` / `npm start` | Production build |
+| `npm run build` / `npm start` | Production build (requires Postgres `DATABASE_URL`; runs `migrate deploy`) |
+| `npm run build:next` | `next build` only (no DB migration; for quick checks if `DATABASE_URL` is not Postgres yet) |
 | `npm run macro:refresh` | Batch-write macro cache (synthetic series if live ABS unavailable) |
 | `npm test` | Vitest unit tests |
 

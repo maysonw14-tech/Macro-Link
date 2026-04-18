@@ -4,6 +4,9 @@ import { MacroDataAsOf } from "./components/MacroDataAsOf";
 import { Nav } from "./components/Nav";
 import { UploadForm } from "./components/UploadForm";
 
+/** Avoid Prisma on `/` during `next build`; macro “last refreshed” loads at request time (Neon/Vercel). */
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-8 p-6">

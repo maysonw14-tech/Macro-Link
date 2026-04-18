@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Disclaimer } from "../components/Disclaimer";
 import { Nav } from "../components/Nav";
 import { formatAccountingInt } from "@/lib/accountingFormat";
@@ -38,12 +38,10 @@ function varianceFavourable(
 
 function LineBlock({
   ex,
-  i,
   adjusted,
   delta,
 }: {
   ex: LineExplanation;
-  i: number;
   adjusted: number[];
   delta: number[];
 }) {
@@ -53,98 +51,81 @@ function LineBlock({
   const rationaleCell =
     "border-t border-neutral-100 bg-neutral-50/40 px-2 py-1 align-top text-[11px] leading-snug text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/30 dark:text-neutral-400";
 
-  const diffBg =
-    "bg-sky-100/95 dark:bg-sky-950/45 border-t border-sky-200/90 dark:border-sky-900/60";
-
   const rationaleText =
     ex.rationale.trim().length > 0 ? ex.rationale : "\u2013";
 
   const plFav = plLineDeltaFavourable(ex.canonicalId, totalD);
-  const diffLabelBorder =
+  const diffCellBorder =
     plFav === true
-      ? "border-l-[3px] border-l-[var(--status-ok-border)] pl-1.5"
+      ? "border-l-[3px] border-l-[var(--status-ok-border)]"
       : plFav === false
-        ? "border-l-[3px] border-l-[var(--status-danger-border)] pl-1.5"
+        ? "border-l-[3px] border-l-[var(--status-danger-border)]"
         : "";
 
+  const diffCellTone =
+    plFav === true
+      ? "text-emerald-900 dark:text-emerald-200"
+      : plFav === false
+        ? "text-red-900 dark:text-red-200"
+        : "text-neutral-900 dark:text-neutral-100";
+
+  const diffCellBg =
+    "bg-sky-100/80 dark:bg-sky-950/40 border-l border-sky-200/80 dark:border-sky-900/50";
+
   return (
-    <Fragment key={i}>
-      <tr className="border-t border-neutral-200 dark:border-neutral-800">
-        <td className="border-t border-neutral-100 px-2 py-1 font-medium dark:border-neutral-800">
-          <span className="text-neutral-900 dark:text-neutral-100">{ex.rowLabel}</span>
-          {ex.lowMappingConfidence ? (
-            <span
-              className="ml-1.5 inline-flex items-center rounded border border-[var(--status-review-border)]/60 bg-[var(--status-review-bg)] px-1 py-0.5 text-[10px] font-medium text-orange-950 dark:text-orange-50"
-              title="Mapping confidence for this line was below 45%. Review it on Mappings."
-            >
-              Low map
-            </span>
-          ) : null}
-          <span className="ml-1 font-normal text-neutral-500 dark:text-neutral-400">· scenario</span>
-        </td>
-        {adjusted.map((v, t) => (
-          <td
-            key={t}
-            className="border-t border-neutral-100 px-2 py-1 text-right font-mono tabular-nums dark:border-neutral-800"
+    <tr className="border-t border-neutral-200 dark:border-neutral-800">
+      <td className="border-t border-neutral-100 px-2 py-1 font-medium dark:border-neutral-800">
+        <span className="text-neutral-900 dark:text-neutral-100">{ex.rowLabel}</span>
+        {ex.lowMappingConfidence ? (
+          <span
+            className="ml-1.5 inline-flex items-center rounded border border-[var(--status-review-border)]/60 bg-[var(--status-review-bg)] px-1 py-0.5 text-[10px] font-medium text-orange-950 dark:text-orange-50"
+            title="Mapping confidence for this line was below 45%. Review it on Mappings."
           >
-            {formatAccountingInt(v)}
-          </td>
-        ))}
-        <td className="border-t border-neutral-100 px-2 py-1 text-right font-mono font-medium tabular-nums dark:border-neutral-800">
-          {formatAccountingInt(totalA)}
-        </td>
-        <td className={`${rationaleCell} border-t border-neutral-100 dark:border-neutral-800`}>{"\u2013"}</td>
-      </tr>
-      <tr className={diffBg}>
+            Low map
+          </span>
+        ) : null}
+      </td>
+      {adjusted.map((v, t) => (
         <td
-          className={`px-2 py-1 text-neutral-800 dark:text-neutral-200 ${diffBg} ${diffLabelBorder}`}
+          key={t}
+          className="border-t border-neutral-100 px-2 py-1 text-right font-mono tabular-nums dark:border-neutral-800"
         >
-          <span className="font-medium text-neutral-900 dark:text-neutral-100">{ex.rowLabel}</span>
-          <span className="ml-1 font-normal text-neutral-600 dark:text-neutral-400">· difference</span>
+          {formatAccountingInt(v)}
+        </td>
+      ))}
+      <td className="border-t border-neutral-100 px-2 py-1 text-right font-mono font-medium tabular-nums dark:border-neutral-800">
+        {formatAccountingInt(totalA)}
+      </td>
+      <td
+        className={`border-t border-neutral-100 px-2 py-1 text-right font-mono font-medium tabular-nums dark:border-neutral-800 ${diffCellBg} ${diffCellBorder} ${diffCellTone}`}
+      >
+        <span className="inline-flex w-full items-center justify-end gap-1.5">
           {plFav === true ? (
             <span
-              className="ml-1.5 text-green-600 dark:text-green-400"
-              title="Better off under this macro scenario (row total)."
+              className="text-green-600 dark:text-green-400"
+              title="Better off under this macro scenario (sum of period deltas)."
               aria-label="Better off under this macro scenario"
             >
               ▲
             </span>
           ) : plFav === false ? (
             <span
-              className="ml-1.5 text-red-600 dark:text-red-400"
-              title="Worse off under this macro scenario (row total)."
+              className="text-red-600 dark:text-red-400"
+              title="Worse off under this macro scenario (sum of period deltas)."
               aria-label="Worse off under this macro scenario"
             >
               ▼
             </span>
           ) : null}
-        </td>
-        {delta.map((v, t) => (
-          <td
-            key={t}
-            className={`px-2 py-1 text-right font-mono tabular-nums text-neutral-900 dark:text-neutral-100 ${diffBg}`}
-          >
-            {formatAccountingInt(v)}
-          </td>
-        ))}
-        <td
-          className={`px-2 py-1 text-right font-mono font-medium tabular-nums ${diffBg} ${
-            plFav === true
-              ? "text-emerald-900 dark:text-emerald-200"
-              : plFav === false
-                ? "text-red-900 dark:text-red-200"
-                : "text-neutral-900 dark:text-neutral-100"
-          }`}
-        >
-          {formatAccountingInt(totalD)}
-        </td>
-        <td
-          className={`${rationaleCell} min-w-[12rem] max-w-[min(28rem,45vw)] border-t-0 bg-sky-50/90 dark:bg-sky-950/35 dark:text-neutral-300`}
-        >
-          {rationaleText}
-        </td>
-      </tr>
-    </Fragment>
+          <span>{formatAccountingInt(totalD)}</span>
+        </span>
+      </td>
+      <td
+        className={`${rationaleCell} min-w-[12rem] max-w-[min(28rem,45vw)] border-t border-neutral-100 dark:border-neutral-800`}
+      >
+        {rationaleText}
+      </td>
+    </tr>
   );
 }
 
@@ -185,9 +166,10 @@ export default function ResultsPage() {
             on your uploaded numbers: we take recent moves in a few public indicators (from the data we have cached),
             blend them with the sensitivities you set per line and your industry choice, and scale each month of the
             baseline. It is a transparent scenario overlay, not a full economic or earnings forecast. The table below
-            shows the <strong className="font-medium text-neutral-800 dark:text-neutral-200">scenario</strong> row and
-            the <strong className="font-medium text-neutral-800 dark:text-neutral-200">change</strong> from your upload
-            per line (no separate “before” row).
+            is <strong className="font-medium text-neutral-800 dark:text-neutral-200">one row per line</strong>{" "}
+            (macro-adjusted amounts by period), plus a{" "}
+            <strong className="font-medium text-neutral-800 dark:text-neutral-200">total difference</strong> column
+            (sum of overlay deltas across months) and rationale—no separate “before” row.
           </p>
           <p>
             Rows mapped as gross profit, operating-expense totals, EBITDA, EBIT, or bottom-line profit{" "}
@@ -265,6 +247,12 @@ export default function ResultsPage() {
                   <th className="whitespace-nowrap border-l border-neutral-200 px-2 py-2 text-right dark:border-neutral-700">
                     Total
                   </th>
+                  <th
+                    className="whitespace-nowrap border-l border-neutral-200 bg-sky-50/80 px-2 py-2 text-right dark:border-neutral-700 dark:bg-sky-950/30"
+                    title="Sum of period overlay deltas for this line"
+                  >
+                    Δ total
+                  </th>
                   <th className="min-w-[12rem] border-l border-neutral-200 px-2 py-2 dark:border-neutral-700">
                     Rationale
                   </th>
@@ -275,7 +263,6 @@ export default function ResultsPage() {
                   <LineBlock
                     key={i}
                     ex={ex}
-                    i={i}
                     adjusted={overlay.adjusted[i]!}
                     delta={overlay.delta[i]!}
                   />

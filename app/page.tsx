@@ -21,7 +21,6 @@ export default function Home() {
         <UploadForm />
       </section>
       <MacroDataAsOf />
-      <FeedbackForm />
       <section className="text-sm text-neutral-600 dark:text-neutral-400">
         <h2 className="font-semibold text-neutral-900 dark:text-neutral-100">Flow</h2>
         <ol className="mt-2 list-decimal space-y-1 pl-5">
@@ -29,6 +28,7 @@ export default function Home() {
           <li>Upload spreadsheet → answer questions → review mappings → open results and download CSV.</li>
         </ol>
       </section>
+      <FeedbackForm />
     </main>
   );
 }

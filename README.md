@@ -2,7 +2,7 @@
 
 Australian **Retail** MVP: upload a budget/forecast spreadsheet, answer a few questions, confirm account mappings, then view a **macro scenario overlay** with transparent drivers and a short narrative (material factors, limitations, template recommendations).
 
-Macro series and wizard state live in **PostgreSQL** (e.g. free **Neon** for local + Vercel). **Uploads do not call ABS** — use **Update macro data** (UI or `npm run macro:refresh`) to refresh the cache.
+Macro series and wizard state live in **PostgreSQL** (e.g. free **Neon** for local + Vercel). **Uploads do not call ABS** — use **Refresh macro data** on the home page (with `MACRO_REFRESH_SECRET`) or `npm run macro:refresh` to refresh the cache.
 
 ## Quick start
 
@@ -11,7 +11,7 @@ cp .env.example .env
 # Edit .env: set DATABASE_URL to your Postgres URL (e.g. create a free project at neon.tech).
 npm install
 npx prisma migrate dev
-npm run macro:refresh   # or click “Update macro data” in the app
+npm run macro:refresh   # or use “Refresh macro data” on the home page (needs MACRO_REFRESH_SECRET)
 npm run dev
 ```
 

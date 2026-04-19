@@ -1,6 +1,7 @@
 import { Disclaimer } from "./components/Disclaimer";
 import { FeedbackForm } from "./components/FeedbackForm";
 import { MacroDataAsOf } from "./components/MacroDataAsOf";
+import { MacroRefreshPanel } from "./components/MacroRefreshPanel";
 import { Nav } from "./components/Nav";
 import { UploadForm } from "./components/UploadForm";
 
@@ -27,11 +28,15 @@ export default function Home() {
       <section className="text-sm text-neutral-600 dark:text-neutral-400">
         <h2 className="font-semibold text-neutral-900 dark:text-neutral-100">Flow</h2>
         <ol className="mt-2 list-decimal space-y-1 pl-5">
-          <li>Macro series are refreshed periodically on the server (see above).</li>
+          <li>
+            Use <strong>Refresh macro data</strong> at the bottom of this page when the cache is empty (e.g. new
+            database).
+          </li>
           <li>Upload spreadsheet → answer questions → review mappings → open results and download CSV.</li>
         </ol>
       </section>
       <FeedbackForm />
+      <MacroRefreshPanel />
     </main>
   );
 }
